@@ -1,0 +1,57 @@
+body{
+	background-color: skyblue
+}
+
+.container{
+	position: relative;
+	background-color: cadetblue;
+	width: 229px;
+	margin: 50px auto;
+	padding: 6px;
+	border-radius: 5px;
+	border: 2px solid darkblue;
+}
+
+.button{
+	font-family: helvetica;
+	font-size: 20px;
+	text-align: center;
+	vertical-align: middle;
+	display: inline-block;
+	min-height: 30px;
+	min-width: 50px;
+	font-weight: bold;
+	color: lightgray;
+	background-color: darkblue;
+	margin: 2px;
+	padding-top: 10px;
+	cursor: pointer;
+	border-radius: 3px;
+	
+	
+}
+
+.button:active {
+	box-shadow: inset 1px 1px 5px #000;
+}
+
+.display {
+	font-family: monospace;
+	font-size: 30px;
+	text-align: right;
+	background-color: gray;
+	border: 2px solid darkblue;
+	min-height: 50px;
+	min-width: 221px;
+	margin: 10px 2px;
+	box-shadow: inset 2px 2px 5px 2px #555;
+	box-sizing: border-box;
+	padding-top: 20px;
+}
+
+#add{
+	position: absolute;
+	bottom: 6;
+	right: 7;
+	height: 74px;
+}
