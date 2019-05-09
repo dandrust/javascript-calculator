@@ -58,6 +58,47 @@ var applyHandlers = function() {
     var data = e.originalEvent.dataTransfer.getData("text");
     e.target.appendChild($('#' + data).clone()[0]);
   })
+
+  $('.resize-handle').on('mousedown', initializeResize);
+  writeBoxPercents();
+}
+
+var writeBoxPercents = function() {
+  $container = $('#slider-container');
+  containerHeight = $container.height();
+  $container.children().each(function(index){
+    $child = $(this);
+    height = $child.height();
+    $child.find('.box-label').html(parseInt(100 * height / containerHeight));
+  })
+}
+
+var initializeResize = function(e) {
+  debug("resizing!")
+  $(window).on('mousemove', startResize.bind(null, $(e.target).parent()))
+  $(window).on('mouseup', stopResize.bind(null, $(e.target).parent()))
+}
+
+var stopResize = function(e) {
+  $(window).off('mousemove')
+  $(window).off('mouseup')
+}
+
+var startResize = function($target, e) {
+  debug('$target is ' + $target)
+  debugVal = $target;
+  debug('e is ' + e)
+  $sibling = $target.next();
+
+  targetHeight = $target.height();
+  siblingHeight = $sibling.height();
+  combinedHeight = targetHeight + siblingHeight;
+
+  newTargetHeight = (e.originalEvent.clientY - $target.offset()['top'])
+  $target.css('height', newTargetHeight + 'px');
+  
+  $sibling.css('height', combinedHeight - newTargetHeight + 'px');
+  writeBoxPercents()
 }
 
 var writeDisplay = function() {
@@ -112,4 +153,3 @@ var collapseAccount = function($target) {
   $target.parent().find('.line-container').children().hide();
   $target.show();
 }
-
