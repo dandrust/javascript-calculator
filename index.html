@@ -12,77 +12,128 @@
 
 <body>
 	<div class="container">
-		<div class="display"><span id="display">&nbsp;</span>
-
+		<div class="display">
+      <span id="display">&nbsp;</span>
 		</div>
 		<div class="row">
-			<div class="button" id="all-clear">
-				AC
-			</div>
-			<div class="button" id="clear-entry">
-				CE
-			</div>
-			<div class="button" id="percent">
-				%
-			</div>
-			<div class="button" id="divide">
-				/
-			</div>
-		</div>
-		<div class="row">
-			<div class="button" id="9">
+			<div class="button value" id="9">
 				9
 			</div>
-			<div class="button" id="8">
+			<div class="button value" id="8">
 				8
 			</div>
-			<div class="button" id="7">
+			<div class="button value" id="7">
 				7
-			</div>
-			<div class="button" id="multiply">
-				*
-			</div>
+      </div>
 		</div>
 		<div class="row">
-			<div class="button" id="6">
+			<div class="button value" id="6">
 				6
 			</div>
-			<div class="button" id="5">
+			<div class="button value" id="5">
 				5
 			</div>
-			<div class="button" id="4">
+			<div class="button value" id="4">
 				4
-			</div>
-			<div class="button" id="subtract">
-				-
 			</div>
 		</div>
 		<div class="row">
-			<div class="button" id="3">
+			<div class="button value" id="3">
 				3
 			</div>
-			<div class="button" id="2">
+			<div class="button value" id="2">
 				2
 			</div>
-			<div class="button" id="1">
+			<div class="button value" id="1">
 				1
 			</div>
 		</div>
 		<div class="row">
-			<div class="button" id="0">
+			<div class="button value float" id=".25">
+				.25
+			</div>
+			<div class="button value float" id=".5">
+			  .50
+			</div>
+			<div class="button value" id="0">
 				0
 			</div>
-			<div class="button" id="point">
-				.
-			</div>
-			<div class="button" id="enter">
-				=
-			</div>
 		</div>
-		<div class="button" id="add">
-			+
+		<div class="row">
+			<div class="button operation" id="change-mode">
+				M
+			</div>
+			<div class="button operation" id="clear">
+        AC
+			</div>
+			<div class="button operation" id="delete">
+        &lt;
+			</div>
 		</div>
 	</div>
+
+  <div class='account-line-container'>
+    <div id='sbw' class='account-container'>
+      <div class='account-name-container collapsed'>
+        Spark Business Works
+      </div>
+      <div class='line-container'>
+        <div id='sbw-pm' class='line-name-container'>
+          Project Management
+        </div>
+        <div id='sbw-id' class='line-name-container'>
+          Internal Development
+        </div>
+        <div id='sbw-cd' class='line-name-container'>
+          Contract Development
+        </div>
+        <div id='sbw-de' class='line-name-container'>
+          Design
+        </div>
+      </div>
+    </div>
+    <div id='eup' class='account-container'>
+      <div class='account-name-container collapsed'>
+        Elevator UP
+      </div>
+      <div class='line-container'>
+        <div id='eup-pm' class='line-name-container'>
+          Consulting
+        </div>
+        <div id='eup-id' class='line-name-container'>
+          New Features
+        </div>
+        <div id='eup-cd' class='line-name-container'>
+          Operational Maintenance
+        </div>
+        <div id='eup-de' class='line-name-container'>
+          Design
+        </div>
+      </div>
+    </div>
+    <div id='csm' class='account-container'>
+      <div class='account-name-container collapsed'>
+        CSM
+      </div>
+      <div class='line-container'>
+        <div id='csm-pm' class='line-name-container'>
+          Project Management
+        </div>
+        <div id='csm-sa' class='line-name-container'>
+          Safety
+        </div>
+        <div id='csm-so' class='line-name-container'>
+          Something
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <br />
+  <br />
+  Timesheet:
+  <div id='timesheet'>
+  </div>
 
 
 

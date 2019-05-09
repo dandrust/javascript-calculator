@@ -55,3 +55,22 @@ body{
 	right: 7;
 	height: 74px;
 }
+
+.account-name-container, .line-name-container {
+  border: 1px solid black;
+  width: 25%;
+}
+
+.account-name-container {
+  background-color: white;
+}
+
+.line-name-container {
+  display: none;
+}
+
+#timesheet {
+  background-color: gray;
+  border: 1px solid black;
+  padding: 10px;
+}

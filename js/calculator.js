@@ -1,142 +1,115 @@
-$(document).ready(function () {
+console.log('wut');
+$(document).ready(function(){ applyHandlers(); });
 
-	var input = "";
-	var exp = [];
-	var resultOnDisplay = false;
-	var result = 0;
+var total = 0
+var commandHistory = []
+var debug = true;
+var debugVal;
 
-	var buildExp = function (x) {
-			console.log("input is:" + x);
-			console.log("typeOf(x): " + typeof x);
-			if (typeof x === "number" || x === ".") {
-				console.log("its a number or a period!")
-				input += x;
-				console.log(input);
-			} else {
-				if (input.indexOf(".") === -1) {
-					exp.push(parseInt(input));
-					input = "";
-					exp.push(x);
-					console.log(exp);
-				} else {
-					exp.push(parseFloat(input));
-					input = "";
-					exp.push(x);
-					console.log(exp);
-				}
+var applyHandlers = function() {
+  debug('applying handlers');
 
-			}
+  $('.button.value').on("click", function(e) {
+    $target = $(e.target);
+    valueString = $target[0].id;
+    value = $target.hasClass('float') ? 
+      parseFloat(valueString) :
+      parseInt(valueString)
+      
+    addValue(value);
+    writeDisplay();
+  });
 
-		} // end buildExp()
+  $('#clear').on("click", function() {
+    reset();
+    writeDisplay();
+  });
 
-	var calculate = function () {
-			console.log("inside calculate()");
-			var operator = "";
-			result = exp.reduce(function (a, b) {
-				console.log(a, b);
-				if (!!operator) {
-					console.log("there is something in operator: " + operator);
-					var op = operator;
-					operator = "";
-					if (op === "+") {
-						return a + b;
-					} else if (op === "-") {
-						return a - b;
-					} else if (op === "*") {
-						return a * b;
-					} else if (op === "/") {
-						return a / b;
-					}
+  $('#delete').on("click", function() {
+    removeLastAddend();
+    syncTotal();
+    writeDisplay();
+  });
 
-				} else if (b === "%") {
-					return a / 100;
-				} else {
-					operator = b
-					return a;
-				}
+  initializeDisplay();
 
+  $('.account-name-container').on("click", function(e) {
+    debug('account clicked');
+    $target = $(e.target);
+    if ($target.parent().hasClass('expanded')) {
+      debug("has class 'expanded'")
+      collapseAccount($target);
+    } else {
+      debug("has class 'collapsed'")
+      expandAccount($target);
+    }
+  })
 
-			});
+  $('.line-name-container').attr('draggable', true);
+  $('.line-name-container').on('dragstart', function(e) {
+    e.originalEvent.dataTransfer.setData("text", e.target.id);
+  })
 
-		
-		var resultLength = "" + result;
-		if (resultLength.length > 11){
-			return result.toExponential(5);
-		}
-		
-		return result;
+  $('#timesheet').on('dragover', function(e) {
+    e.preventDefault();
+  })
+  $('#timesheet').on('drop', function(e) {
+    e.preventDefault();
+    var data = e.originalEvent.dataTransfer.getData("text");
+    e.target.appendChild($('#' + data).clone()[0]);
+  })
+}
 
-		} // end calculate()
+var writeDisplay = function() {
+  $('#display').html(total);
+}
 
-	var inputAfterResult = function (val) {
-		resultOnDisplay = false;
-		if (val === "number") {
-			$("#display").html("&nbsp;");
-		} else if (val === "operator") {
-			input += result;
-			result = 0;
-		}
-	}
+var initializeDisplay = function() {
+  writeDisplay();
+}
 
-	$("#0, #1, #2, #3, #4, #5, #6, #7, #8, #9").on("click", function () {
-		if (input.length <= 10) {
-			if (resultOnDisplay)
-				inputAfterResult("number");
-			console.log("in document")
-			var value = parseInt($(this).attr("id"));
-			$("#display").append(value);
-			buildExp(value);
-		}
+var addValue = function(value) {
+  debug(value);
+  commandHistory.push(value);
+  total = total + value;
+}
 
-	});
+var reset = function() {
+  history = [];
+  total = 0;
+}
 
-	$("#point").on("click", function () {
-		if (input.length <= 10) {
-			if (resultOnDisplay)
-				inputAfterResult("number");
-			var value = ".";
-			$("#display").append(value);
-			buildExp(value);
-		}
-	});
+function removeLastAddend() {
+  commandHistory.pop();
+}
 
-	$("#add, #subtract, #multiply, #divide, #percent").on("click", function () {
-		if (resultOnDisplay)
-			inputAfterResult("operator");
-		var value = $(this).html().split("").filter(function (val) {
-			return /[\+\-\*\/\%]/.test(val);
-		}).join("");
-		console.log(value);
-		$("#display").html("&nbsp;");
-		buildExp(value);
-		if (value === "%")
-			$("#enter").trigger("click");
-	});
+var syncTotal = function() {
+  total = commandHistory.reduce(function(acc, value) {
+    return acc + value
+  }, 0)
+}
 
-	$("#enter").on("click", function () {
-		if (!resultOnDisplay) {
-			var value = "enter";
-			buildExp(value);
-			$("#display").html("&nbsp;");
-			$("#display").append(calculate());
-			resultOnDisplay = true;
-			exp = [];
-			input = "";
-		}
-	});
-
-	$("#all-clear").on("click", function () {
-		$("#display").html("&nbsp;");
-		exp = [];
-		input = "";
-	});
-
-	$("#clear-entry").on("click", function () {
-		$("#display").html("&nbsp;");
-		input = "";
-	});
+var debug = function(value) {
+  if (!debug) return;
+  console.log(value);
+}
 
 
+var expandAccount = function($target) {
+  debugVal = $target
+  debug("expanding account");
+  $target.parent().removeClass('collapsed');
+  $target.parent().addClass('expanded');
+  $target.parent().find('.line-container').children().show();
+  $target.show();
+}
 
+var collapseAccount = function($target) {
+  debugVal = $target
+  debug("collapsing account");
+  $target.parent().removeClass('expanded');
+  $target.parent().addClass('collapsed');
+  $target.parent().find('.line-container').children().hide();
+  $target.show();
+}
 
-}); //end document.ready
