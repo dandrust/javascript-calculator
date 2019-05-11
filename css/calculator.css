@@ -74,3 +74,35 @@ body{
   border: 1px solid black;
   padding: 10px;
 }
+
+#slider-container {
+  background-color: red;
+  height: 500px;
+  width: 20em;
+}
+.box {
+  height: 33%;
+  position: relative;
+  font-size: 5em;
+  color: white;
+  text-align: center;
+}
+.resize-handle {
+  cursor: row-resize;
+  background-color: green;
+  height: 10px;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+#box-1 {
+  background-color: blue;
+}
+#box-2 {
+  background-color: orange;
+}
+#box-3 {
+  background-color: pink;
+}
