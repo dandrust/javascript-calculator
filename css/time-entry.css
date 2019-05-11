@@ -1,9 +1,10 @@
 .agenda-block {
-  border: 1px solid lightgray;
+  border-top: 1px solid lightgray;
+  border-bottom: 1px solid lightgray;
   box-sizing: border-box;
-  border-radius: 5px;
   height: 2em;
   position: relative;
+  width: 100%;
 } 
 
 .agenda-label {
@@ -47,4 +48,8 @@
   cursor: s-resize;
   bottom: 0;
   left: 0;
+}
+
+#agenda-container {
+  position: relative;
 }

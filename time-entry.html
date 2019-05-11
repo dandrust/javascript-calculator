@@ -5,19 +5,170 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
   <script src='js/time-entry.js'></script>
   <link rel='stylesheet' href='css/time-entry.css'>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 </head>
-<body>
+<body>  
+  <script type='text/x-template' id='client-accordion-template'>
+    <div class='panel-group' v-bind:id='panelGroupId'>
+      <div class='panel panel-default'>
+        
+        <div class='panel-heading'>
+          <a data-toggle='collapse' v-bind:data-parent='panelGroupIdSelector' v-bind:href='panelContentIdSelector'>
+            <h3 class='panel-title'>{{client.displayName}}</h3>
+          </a>
+        </div>
 
-  <div class='container'>
+        <ul v-bind:id='panelContentId' class='list-group panel-collapse collapse'>
+          <project-item
+            v-for='project in projects'
+            v-bind:project="project"
+          ></project-item>
+       </ul>
+         
+      </div>
+    </div>
+  </script>
+  <script type='text/x-template' id='project-item-template'>
+    <li class='list-group-item' draggable='true' v-on:dragstart='startProjectDrag'>{{project.displayName}}</li>
+  </script>
+  
+  <script type='text/x-template' id='agenda-template'>
+    <div id='agenda-container'>
+      <agenda-block
+        v-for='block in agendaBlocks'
+        v-bind:block='block'
+        v-bind:time-entry='timeEntry'
+        v-on:create-time-entry="createTimeEntry"></agenda-block>
+      
+    </div>
+  </script>
+  
+  <script type='text/x-template' id='agenda-block-template'>
+    <div class='agenda-block' v-bind:class="[hoverHelper]" v-on:dragover.prevent v-on:dragenter='addHoverState' v-on:dragexit='removeHoverState' v-on:drop.prevent='assumeProject'>
+      <span class='agenda-label'>{{block.time}}</span>
+      <time-entry
+        v-bind:entry='timeEntry'></time-entry>
+    </div>
+  </script>
+  
+  <script type='text/x-template' id='time-entry-template'>
+    <div class='time-entry'>
+      <!-- {{entry.start}} - {{ entry.project.id }} - {{ entry.project.displayName }} - ({{ entry.client.displayName }}) -->
+    </div>
+
+  </script>  
+
+  
+  <script>
+    Vue.component('project-item', {
+      props: ['project'],
+      methods: {
+        startProjectDrag: function() {
+          event.dataTransfer.setData("text", this.project.id);
+        }
+      },
+      template: "#project-item-template"
+    })
+    Vue.component('client-accordion', {
+      props: ['client', 'projects'],
+      computed: {
+        panelGroupId: function() {
+          return this.client.code + "-group";
+        },
+        panelGroupIdSelector: function() {
+          return "#" + this.panelGroupId;
+        },
+        panelContentId: function() {
+          return this.client.code + "-content";
+        },
+        panelContentIdSelector: function() {
+          return "#" + this.panelContentId;
+        },
+      },
+      methods: {
+        startProjectDrag: function() {
+          event.dataTransfer.setData("text", e.target.innerText);
+        }
+      },
+      template: '#client-accordion-template'
+    })
+    Vue.component('agenda', {
+      props: ['agenda', 'timeEntries'],
+      computed: {
+        agendaBlocks: function() {
+          array = [];
+          for(i=0; i<(this.agenda.length * this.agenda.precision); i++) {
+            array.push({time: i, occupied: false, project: null});
+          }
+          return array;
+        },
+        timeEntry: function () {
+          return this.timeEntries.filter(function(timeEntry){
+            return timeEntry.start === block.start;
+          })[0]
+        }
+       },
+      methods: {
+        createTimeEntry: function(event){
+          this.$emit('create-time-entry', event)
+        },
+      },
+      template: '#agenda-template'
+    })
+    Vue.component('agenda-block', {
+      props: ['block', 'timeEntry'],
+      data: function() {
+        return {
+          hoverState: false,
+          project: null
+        }
+      },
+      computed: {
+        hoverHelper: function() {
+          if (this.project) {
+            return 'bg-primary';
+          } else if (this.hoverState) {
+            return 'bg-info';
+          }
+        }
+      },
+      methods: {
+        addHoverState: function() {
+          this.hoverState = true;
+        },
+        removeHoverState: function() {
+          this.hoverState = false;
+        },
+        assumeProject: function (event) {
+          var data = event.dataTransfer.getData("text");
+          this.project = data;
+          this.$emit('create-time-entry', {start: this.block.time, project: this.project})
+        }
+      },
+      template: '#agenda-block-template'
+    })
+    Vue.component('time-entry', {
+      props: ['entry'],
+      template: '#time-entry-template'
+    })
+  </script>
+
+  <div id='app' class='container'>
     <div id='panel-1' class='panel col-md-5 col-md-offset-1'>
       <div class='panel-title'>
         <h2>June 1, 2019 </h2>
       </div>
       <div class='well interactive-panel'>
-        <div class='agenda-block'>
+        
+        <agenda
+          v-bind:agenda='agenda'
+          v-bind:time-entries='timeEntries'
+          v-on:create-time-entry='createTimeEntry'></agenda>
+        
+        <!-- <div class='agenda-block'>
           <span class='agenda-label'>8 AM</span>
           <div class='agenda-item agenda-block bg-primary'>
             <div class='agenda-item-container'>
@@ -25,259 +176,162 @@
               <div class='drag-handle'></div>
             </div>
           </div>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:15</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:30</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:45</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>9 AM</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:15</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:30</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:45</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>10 AM</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:15</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:30</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:45</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>11 AM</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:15</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:30</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:45</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>12 PM</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:15</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:30</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:45</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>1 PM</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:15</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:30</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:45</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>2 PM</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:15</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:30</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:45</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>3 PM</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:15</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:30</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:45</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>4 PM</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:15</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:30</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:45</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>5 PM</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:15</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:30</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:45</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>6 PM</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:15</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:30</span>
-        </div>
-        <div class='agenda-block'>
-          <span class='agenda-label'>:45</span>
-        </div>
-        <div class='agenda-block ghost-block'>
-          <span class='agenda-label'>7 PM</span>
-        </div>
+        </div> -->
       </div>
     </div>
     <div id='panel-2' class='panel col-md-5'>
       <div class='panel-title'>
         <h2>My Work</h2>
       </div>
-      <div class='interactive-panel'>
-        <div class='panel-group' id='favorites-group'>
-          <div class='panel panel-default'>
-            <div class='panel-heading'>
-              <a data-toggle='collapse' data-parent='#favorites-group' href='#favorites-content'>
-                <h3 class='panel-title'>Favorites/Recents</h3>
-              </a>
-            </div>
-            <div id='favorites-content' class='panel-collapse collapse in'>
-              <ul class='list-group'>
-                <li class='list-group-item'>
-                  Roommates: Cloudinary
-                </li>
-                <li class='list-group-item'>
-                  Internal: Non-billable
-                </li>
-                <li class='list-group-item'>
-                  Baker Book Store: Avalara Cert Capture
-                </li>
-                <li class='list-group-item'>
-                  Internal: Lunch
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <div class='panel-group' id='bbh-group'>
-          <div class='panel panel-default'>
-            <div class='panel-heading'>
-              <a data-toggle="collapse" data-parent='#bbh-group' href='#bbh-content'>
-                <h3 class='panel-title'>Baker Book Store</h3>
-              </a>
-            </div>
-            <div id='bbh-content' class='panel-collapse collapse'>
-              <ul class='list-group'>
-                <li class='list-group-item'>
-                  Avalara Cert Capture
-                </li>
-                <li class='list-group-item'>
-                  Shipping Bug
-                </li>
-                <li class='list-group-item'>
-                  Symposia/MailChimp integration
-                </li>
-                <li class='list-group-item'>
-                  Preorder styling
-                </li>
-                <li class='list-group-item'>
-                  Daily stock fluctuations
-                </li>
-                <li class='list-group-item'>
-                  Spike: Ingram import distruption
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
+      
 
-        <div class='panel-group' id='rm-group'>
-          <div class='panel panel-default'>
-            <div class='panel-heading'>
-              <a data-toggle='collapse' data-parent='#rm-group' href='#rm-content'>
-                <h3 class='panel-title'>Roommates</h3>
-              </a>
-            </div>
-            <div id='rm-content' class='panel-collapse collapse'>
-              <ul class='list-group'>
-                <li class='list-group-item'>
-                  Cloudinary
-                </li>
-                <li class='list-group-item'>
-                  Matches
-                </li>
-                <li class='list-group-item'>
-                  Admin payments interface changes
-                </li>
-                <li class='list-group-item'>
-                  Improvements to ID Verification process
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
+      <client-accordion
+        v-for='client in clients'
+        v-bind:client='client'
+        v-bind:projects='projectsByClient(client)'></client-accordion>
 
-        <div class='panel-group' id='internal-group'>
-          <div class='panel panel-default'>
-            <div class='panel-heading'>
-              <a data-toggle='collapse' data-parent='#internal-group' href='#internal-content'>
-                <h3 class='panel-title'>Internal</h3>
-              </a>
-            </div>
-            <div id='internal-content' class='panel-collapse collapse'>
-              <ul class='list-group'>
-                <li class='list-group-item'>
-                  Non-billable
-                </li>
-                <li class='list-group-item'>
-                  Lunch
-                </li>
-                <li class='list-group-item'>
-                  Team Time
-                </li>
-                <li class='list-group-item'>
-                  Travel
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
 
     </div>
+    
+    <div v-for='entry in timeEntries'>
+      {{entry.start}} - {{ entry.project.id }} - {{ entry.project.displayName }} - ({{ entry.client.displayName }})
+    </div>
+    
   </div>
 
+  <script>
+    var projects = [
+      {
+        id: 1,
+        displayName: "Avalara Cert Capture",
+        clientId: 1
+      }, 
+      {
+        id: 2,
+        displayName: "Shipping Bug",
+        clientId:1
+      }, 
+      {
+        id: 3,
+        displayName: "Symposia/Mail Chimp Integration",
+        clientId: 1
+      }, 
+      {
+        id: 4,
+        displayName: "Preorder Styling",
+        clientId: 1
+      }, 
+      {
+        id: 5,
+        displayName: "Daily stock fluctuations",
+        clientId: 1
+      }, 
+      {
+        id: 6,
+        displayName: "Spike: Ingram import disruption",
+        clientId: 1
+      } ,
+      {
+        id: 7,
+        displayName: "Cloudinary",
+        clientId: 2
+      }, 
+      {
+        id: 8,
+        displayName: "Matches",
+        clientId: 2
+      }, 
+      {
+        id: 9,
+        displayName: "E-commerce",
+        clientId: 2
+      }, 
+      {
+        id: 10,
+        displayName: "Admin UI",
+        clientId: 2
+      }, 
+      {
+        id: 11,
+        displayName: "Non-billable",
+        clientId: 3
+      }, 
+      {
+        id: 12,
+        displayName: "Lunch",
+        clientId: 3
+      }, 
+      {
+        id: 13,
+        displayName: "Team time",
+        clientId: 3
+      }, 
+      {
+        id: 14,
+        displayName: "Travel",
+        clientId: 3
+      }, 
+    ]
+    var clients =  [
+      {
+        id: 1,
+        displayName: "Baker Book House",
+        code: "bbh"
+      },
+      {
+        id: 2,
+        displayName: "Roommates",
+        code: "rm"
+      },
+      {
+        id: 3,
+        displayName: "Internal",
+        code: "in"
+      },
+    ];
+
+    var app = new Vue({
+      el: "#app",
+      data: {
+        clients: clients,
+        projects: projects,
+        timeEntries: [],
+        agenda: {
+          start: 8,
+          length: 10,
+          precision: 4
+        },
+
+      },
+      methods: {
+        createTimeEntry: function (event) {
+          project = this.projectById(event.project)
+          this.timeEntries.push({
+            start: event.start,
+            project: project,
+            client: this.clientById(project.clientId)
+          })
+        },
+        projectsByClient: function(client) {
+          return projects.filter(function(project) {
+            console.log(client.id)
+            console.log(project.clientId)
+            return client.id === project.clientId;
+          })
+        },
+        projectById: function(id) {
+          return projects.filter(function(project) {
+            return parseInt(id) === project.id;
+          })[0]
+        },
+        clientById: function(id) {
+          return clients.filter(function(client) {
+            return parseInt(id) === client.id
+          })[0]
+        }
+      }
+    })
+  </script>
 
 </body>
 </html>
